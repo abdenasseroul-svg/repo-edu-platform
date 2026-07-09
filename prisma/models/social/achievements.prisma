@@ -1,0 +1,76 @@
+// prisma/models/social/achievements.prisma
+// الإنجازات والشارات والشهادات
+
+model Achievement {
+  @@schema("social")
+  id          String              @id @default(cuid())
+  name        String
+  nameAr      String
+  nameFr      String
+  description String?             @db.Text
+  icon        String
+  points      Int                 @default(10)
+  criteria    Json
+  category    AchievementCategory
+  isActive    Boolean             @default(true)
+  order       Int                 @default(0)
+
+  studentAchievements StudentAchievement[]
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("achievements")
+}
+
+model StudentAchievement {
+  @@schema("social")
+  id            String      @id @default(cuid())
+  studentId     String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime    @default(now())
+  isViewed      Boolean     @default(false)
+  metadata      Json?
+
+  @@unique([studentId, achievementId])
+  @@map("student_achievements")
+}
+
+model Certificate {
+  @@schema("social")
+  id               String          @id @default(cuid())
+  studentId        String
+  student          Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?         @db.Text
+  type             CertificateType
+  issueDate        DateTime        @default(now())
+  expiryDate       DateTime?
+  certificateUrl   String
+  isVerified       Boolean         @default(false)
+  verificationCode String          @unique
+  metadata         Json?
+
+  createdAt        DateTime        @default(now())
+
+  @@map("certificates")
+}
+
+enum AchievementCategory {
+  LEARNING
+  ENGAGEMENT
+  PERFORMANCE
+  SOCIAL
+  SPECIAL
+}
+
+enum CertificateType {
+  COURSE_COMPLETION
+  ACHIEVEMENT
+  EXAM_PASSED
+  PROGRAM_COMPLETION
+}
+
+

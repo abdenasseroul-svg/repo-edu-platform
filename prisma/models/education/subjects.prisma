@@ -1,0 +1,167 @@
+// prisma/models/education/subjects.prisma
+// المواد الدراسية، المستويات، الفصول، الدروس
+
+model Subject {
+  @@schema("education")
+  id          String   @id @default(cuid())
+  name        String   @unique
+  nameAr      String   @unique
+  nameFr      String   @unique
+  description String?
+  icon        String?
+  color       String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  parentId    String?
+  parent      Subject? @relation("SubjectChildren", fields: [parentId], references: [id])
+  children    Subject[] @relation("SubjectChildren")
+
+  levels              LevelSubject[]
+  assignments         Assignment[]
+  quizzes             Quiz[]
+  questions           Question[]
+  resources           Resource[]
+  weakSubjects        StudentWeakSubject[]
+  teacherSpecialties  TeacherSpecialty[]
+  forumTopics         ForumTopic[]
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@map("subjects")
+}
+
+model LevelSubject {
+  @@schema("education")
+  id          String   @id @default(cuid())
+  level       Level
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  stream      Stream?
+  isRequired  Boolean  @default(true)
+  coefficient Int      @default(1)
+  chapters    Chapter[]
+
+  @@unique([level, subjectId, stream])
+  @@map("level_subjects")
+}
+
+model Chapter {
+  @@schema("education")
+  id             String       @id @default(cuid())
+  name           String
+  nameAr         String
+  nameFr         String
+  description    String?
+  order          Int          @default(0)
+  levelSubjectId String
+  levelSubject   LevelSubject @relation(fields: [levelSubjectId], references: [id], onDelete: Cascade)
+  isActive       Boolean      @default(true)
+
+  lessons     Lesson[]
+  assignments Assignment[]
+  quizzes     Quiz[]
+  questions   Question[]
+  resources   Resource[]
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([levelSubjectId])
+  @@map("chapters")
+}
+
+model Lesson {
+  @@schema("education")
+  id        String   @id @default(cuid())
+  title     String
+  titleAr   String
+  titleFr   String
+  content   String   @db.Text
+  contentAr String?  @db.Text
+  contentFr String?  @db.Text
+  summary   String?  @db.Text
+  summaryAr String?  @db.Text
+  summaryFr String?  @db.Text
+  videoUrl  String?
+  videoEmbed String?
+  pdfUrl    String?
+  audioUrl  String?
+  duration  Int?
+  order     Int      @default(0)
+  isPublished Boolean @default(false)
+  isFree    Boolean  @default(false)
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  assignments    Assignment[]
+  quizzes        Quiz[]
+  lessonProgress LessonProgress[]
+  videoProgress  VideoProgress[]
+  liveClasses    LiveClass[]
+  resources      Resource[]
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([chapterId])
+  @@map("lessons")
+}
+
+model Resource {
+  @@schema("education")
+  id          String       @id @default(cuid())
+  title       String
+  titleAr     String?
+  titleFr     String?
+  description String?      @db.Text
+  type        ResourceType
+  fileUrl     String
+  size        Int?
+  mimeType    String?
+  uploaderId  String
+  uploader    User         @relation(fields: [uploaderId], references: [id])
+  subjectId   String?
+  subject     Subject?     @relation(fields: [subjectId], references: [id])
+  chapterId   String?
+  chapter     Chapter?     @relation(fields: [chapterId], references: [id])
+  lessonId    String?
+  lesson      Lesson?      @relation(fields: [lessonId], references: [id])
+  level       Level?
+  stream      Stream?
+  downloads   Int          @default(0)
+  views       Int          @default(0)
+  isPublished Boolean      @default(false)
+  isFree      Boolean      @default(true)
+  isVerified  Boolean      @default(false)
+  tags        ResourceTag[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([subjectId, level])
+  @@map("resources")
+}
+
+model ResourceTag {
+  @@schema("education")
+  id        String     @id @default(cuid())
+  name      String     @unique
+  resources Resource[]
+
+  @@map("resource_tags")
+}
+
+enum ResourceType {
+  PDF
+  VIDEO
+  AUDIO
+  IMAGE
+  PRESENTATION
+  SPREADSHEET
+  OTHER
+}
+
+

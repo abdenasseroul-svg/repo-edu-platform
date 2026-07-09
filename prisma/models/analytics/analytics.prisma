@@ -1,0 +1,59 @@
+// prisma/models/analytics/analytics.prisma
+// التحليلات اليومية والتنبؤات
+
+model DailyAnalytics {
+  @@schema("analytics")
+  id                   String   @id @default(cuid())
+  date                 DateTime @unique
+  activeUsers          Int      @default(0)
+  newUsers             Int      @default(0)
+  totalStudents        Int      @default(0)
+  totalTeachers        Int      @default(0)
+  totalAdmins          Int      @default(0)
+  lessonsViewed        Int      @default(0)
+  assignmentsCompleted Int      @default(0)
+  quizzesTaken         Int      @default(0)
+  liveClassesAttended  Int      @default(0)
+  revenueGenerated     Float    @default(0)
+  newSubscriptions     Int      @default(0)
+  churnedUsers         Int      @default(0)
+  retentionRate        Float?
+  averageSessionTime   Int?
+  platformMetrics      Json?
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("daily_analytics")
+}
+
+model RealtimeAnalytics {
+  @@schema("analytics")
+  id         String   @id @default(cuid())
+  metricType String
+  value      Float
+  timestamp  DateTime @default(now())
+  metadata   Json?
+
+  @@index([metricType, timestamp])
+  @@map("realtime_analytics")
+}
+
+model ChurnPrediction {
+  @@schema("analytics")
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  riskScore   Float
+  factors     String[]
+  confidence  Float
+  predictedAt DateTime @default(now())
+  isNotified  Boolean  @default(false)
+  actionTaken Boolean  @default(false)
+  actualChurn Boolean?
+
+  @@unique([studentId])
+  @@map("churn_predictions")
+}
+
+

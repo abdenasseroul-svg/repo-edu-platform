@@ -1,0 +1,54 @@
+// prisma/models/security/auth.prisma
+// المصادقة والتوكنات وأجهزة المستخدمين
+
+model RefreshToken {
+  @@schema("security")
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model DeviceToken {
+  @@schema("security")
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  deviceType String
+  deviceName String?
+  deviceId   String?
+  lastUsed   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime?
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+model LoginHistory {
+  @@schema("security")
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress     String?
+  userAgent     String?
+  location      String?
+  deviceType    String?
+  loginTime     DateTime @default(now())
+  logoutTime    DateTime?
+  isSuccessful  Boolean  @default(true)
+  failureReason String?
+
+  @@index([userId])
+  @@index([loginTime])
+  @@map("login_history")
+}
+
+

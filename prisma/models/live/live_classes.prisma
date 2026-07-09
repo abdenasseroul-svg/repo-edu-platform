@@ -1,0 +1,141 @@
+// prisma/models/live/live_classes.prisma
+// الدروس المباشرة - البث الحي والسبورة التفاعلية
+
+model LiveClass {
+  @@schema("live")
+  id           String    @id @default(cuid())
+  title        String
+  description  String?   @db.Text
+  teacherId    String
+  teacher      Teacher   @relation(fields: [teacherId], references: [id])
+  lessonId     String?
+  lesson       Lesson?   @relation(fields: [lessonId], references: [id])
+  classGroupId String?
+  classGroup   ClassGroup? @relation(fields: [classGroupId], references: [id])
+  scheduledFor DateTime
+  duration     Int
+  maxStudents  Int       @default(100)
+  isActive     Boolean   @default(false)
+  isRecording  Boolean   @default(false)
+  recordingUrl String?
+  roomId       String    @unique
+  settings     Json?
+
+  attendees   LiveAttendance[]
+  chatMessages ChatMessage[]
+  raisedHands  RaisedHand[]
+  whiteboard   Whiteboard?
+  recording    Recording?
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([teacherId, scheduledFor])
+  @@map("live_classes")
+}
+
+model LiveAttendance {
+  @@schema("live")
+  id                String   @id @default(cuid())
+  liveClassId       String
+  liveClass         LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  studentId         String
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  joinedAt          DateTime @default(now())
+  leftAt            DateTime?
+  duration          Int?
+  isPresent         Boolean  @default(true)
+  connectionQuality String?
+  deviceInfo        Json?
+
+  @@unique([liveClassId, studentId])
+  @@map("live_attendances")
+}
+
+model RaisedHand {
+  @@schema("live")
+  id         String   @id @default(cuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  liveClassId String
+  liveClass  LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  isResolved Boolean  @default(false)
+  resolvedAt DateTime?
+  raisedAt   DateTime @default(now())
+  question   String?  @db.Text
+
+  @@map("raised_hands")
+}
+
+model ChatMessage {
+  @@schema("live")
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  senderId    String
+  sender      User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  liveClassId String?
+  liveClass   LiveClass? @relation(fields: [liveClassId], references: [id])
+  studentId   String?
+  student     Student?  @relation(fields: [studentId], references: [id])
+  teacherId   String?
+  teacher     Teacher?  @relation(fields: [teacherId], references: [id])
+  isPinned    Boolean   @default(false)
+  isSystem    Boolean   @default(false)
+  sentAt      DateTime  @default(now())
+  editedAt    DateTime?
+  deletedAt   DateTime?
+
+  @@index([liveClassId, sentAt])
+  @@map("live_chat_messages")
+}
+
+model Whiteboard {
+  @@schema("live")
+  id          String   @id @default(cuid())
+  liveClassId String   @unique
+  liveClass   LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  data        Json
+  history     Json?
+  version     Int      @default(1)
+  lastUpdate  DateTime @default(now())
+
+  @@map("whiteboards")
+}
+
+model Recording {
+  @@schema("live")
+  id          String   @id @default(cuid())
+  liveClassId String
+  liveClass   LiveClass @relation(fields: [liveClassId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  videoUrl    String
+  thumbnail   String?
+  duration    Int
+  views       Int      @default(0)
+  isPublished Boolean  @default(true)
+  isPremium   Boolean  @default(false)
+  chapters    RecordingChapter[]
+  tags        String[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([liveClassId])
+  @@map("recordings")
+}
+
+model RecordingChapter {
+  @@schema("live")
+  id          String   @id @default(cuid())
+  recordingId String
+  recording   Recording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  title       String
+  startTime   Int
+  endTime     Int
+  description String?  @db.Text
+
+  @@map("recording_chapters")
+}
+
+

@@ -1,0 +1,16 @@
+
+╔══════════════════════════════════════════╗
+║     🎓 منصة التعليم الثانوي - الجزائر    ║
+║     الخادم يعمل على: http://localhost:4000  ║
+║     البيئة: development                   ║
+╚══════════════════════════════════════════╝
+  
+prisma:error 
+Invalid `prisma.user.findUnique()` invocation in
+C:\Users\HP\Videos\mistralapp\edu-platform\backend\src\controllers\auth.controller.ts:61:38
+
+  58 try {
+  59   const { email, password } = req.body;
+  60 
+→ 61   const user = await prisma.user.findUnique(
+Database `(not available)` does not exist on the database server at `localhost:5432`.

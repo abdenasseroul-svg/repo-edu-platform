@@ -1,0 +1,83 @@
+// prisma/models/ai/ai_recommendations.prisma
+// توصيات الذكاء الاصطناعي وخطط التعلم
+
+model AIRecommendation {
+  @@schema("ai")
+  id          String             @id @default(cuid())
+  studentId   String
+  student     Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type        RecommendationType
+  itemId      String
+  itemType    String
+  score       Float
+  reason      String?            @db.Text
+  isViewed    Boolean            @default(false)
+  isClicked   Boolean            @default(false)
+  isCompleted Boolean            @default(false)
+  createdAt   DateTime           @default(now())
+  expiresAt   DateTime?
+
+  @@index([studentId, type])
+  @@map("ai_recommendations")
+}
+
+model LearningPath {
+  @@schema("ai")
+  id          String           @id @default(cuid())
+  studentId   String
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name        String
+  description String?          @db.Text
+  type        LearningPathType @default(PERSONALIZED)
+  generatedBy String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  students LearningPathStudent[]
+
+  @@map("learning_paths")
+}
+
+model LearningPathStudent {
+  @@schema("ai")
+  id         String             @id @default(cuid())
+  pathId     String
+  path       LearningPath       @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  order      Int
+  status     LearningPathStatus @default(PENDING)
+  completedAt DateTime?
+  startedAt  DateTime?
+  dueDate    DateTime?
+
+  @@unique([pathId, studentId])
+  @@map("learning_path_students")
+}
+
+enum RecommendationType {
+  LESSON
+  QUIZ
+  ASSIGNMENT
+  RESOURCE
+  PRACTICE
+  VIDEO
+  FLASHCARD
+}
+
+enum LearningPathType {
+  PERSONALIZED
+  STANDARD
+  ACCELERATED
+  REMEDIAL
+}
+
+enum LearningPathStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+

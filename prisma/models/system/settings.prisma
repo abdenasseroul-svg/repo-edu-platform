@@ -1,0 +1,120 @@
+// prisma/models/system/settings.prisma
+// إعدادات النظام والنسخ الاحتياطي والوظائف المجدولة
+
+model SystemSettings {
+  @@schema("system")
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?  @db.Text
+  category    String?
+  isSecret    Boolean  @default(false)
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model Backup {
+  @@schema("system")
+  id           String        @id @default(cuid())
+  filename     String
+  size         Int
+  type         BackupType
+  status       BackupStatus  @default(PENDING)
+  description  String?
+  errorMessage String?       @db.Text
+  createdBy    String?
+  startedAt    DateTime      @default(now())
+  completedAt  DateTime?
+
+  @@map("backups")
+}
+
+model ScheduledJob {
+  @@schema("system")
+  id        String    @id @default(cuid())
+  name      String    @unique
+  type      JobType
+  schedule  String
+  lastRun   DateTime?
+  nextRun   DateTime?
+  status    JobStatus @default(ENABLED)
+  config    Json?
+  lastResult Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("scheduled_jobs")
+}
+
+model JobExecution {
+  @@schema("system")
+  id          String              @id @default(cuid())
+  jobId       String
+  job         ScheduledJob        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status      JobExecutionStatus  @default(PENDING)
+  startedAt   DateTime            @default(now())
+  completedAt DateTime?
+  duration    Int?
+  result      Json?
+  error       String?             @db.Text
+
+  @@index([jobId, startedAt])
+  @@map("job_executions")
+}
+
+model Cache {
+  @@schema("system")
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  ttl       Int?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("caches")
+}
+
+enum BackupType {
+  FULL
+  INCREMENTAL
+  SCHEMA
+  DATA
+}
+
+enum BackupStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum JobType {
+  BACKUP
+  CLEANUP
+  ANALYTICS
+  EMAIL
+  NOTIFICATION
+  SYNC
+}
+
+enum JobStatus {
+  ENABLED
+  DISABLED
+  RUNNING
+  FAILED
+}
+
+enum JobExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+

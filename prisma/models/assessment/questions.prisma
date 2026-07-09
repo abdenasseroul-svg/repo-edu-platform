@@ -1,0 +1,86 @@
+// prisma/models/assessment/questions.prisma
+// بنك الأسئلة - QCM، تمارين مفتوحة، برمجة، رياضيات
+
+model Question {
+  @@schema("assessment")
+  id            String       @id @default(cuid())
+  content       String       @db.Text
+  contentAr     String?      @db.Text
+  contentFr     String?      @db.Text
+  type          QuestionType @default(MULTIPLE_CHOICE)
+  difficulty    Difficulty   @default(MEDIUM)
+  points        Int          @default(1)
+  hints         String?      @db.Text
+  explanation   String?      @db.Text
+  explanationAr String?      @db.Text
+  explanationFr String?      @db.Text
+  isActive      Boolean      @default(true)
+  isVerified    Boolean      @default(false)
+  usageCount    Int          @default(0)
+  successRate   Float?
+  subjectId     String?
+  subject       Subject?     @relation(fields: [subjectId], references: [id])
+  chapterId     String?
+  chapter       Chapter?     @relation(fields: [chapterId], references: [id])
+  createdBy     String?
+  createdByUser User?        @relation(fields: [createdBy], references: [id])
+  assignmentId  String?
+  assignment    Assignment?  @relation(fields: [assignmentId], references: [id])
+  quizId        String?
+  quiz          Quiz?        @relation(fields: [quizId], references: [id])
+
+  options          QuestionOption[]
+  tags             QuestionTag[]
+  answers          QuestionAnswer[]
+  openEndedAnswers OpenEndedAnswer[]
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([subjectId, chapterId])
+  @@map("questions")
+}
+
+model QuestionOption {
+  @@schema("assessment")
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String   @db.Text
+  textAr     String?  @db.Text
+  textFr     String?  @db.Text
+  isCorrect  Boolean  @default(false)
+  order      Int      @default(0)
+
+  @@map("question_options")
+}
+
+model QuestionTag {
+  @@schema("assessment")
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  questions   Question[]
+
+  @@map("question_tags")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  TRUE_FALSE
+  FILL_BLANK
+  MATCHING
+  OPEN_ENDED
+  PROGRAMMING
+  MATH
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+  CHALLENGE
+}
+
+

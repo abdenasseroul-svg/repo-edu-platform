@@ -1,0 +1,22 @@
+// prisma/models/core/base.prisma
+// الحقول الأساسية المشتركة لجميع النماذج
+
+model Base {
+  @@schema("core")
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("base")
+}
+
+model Timestamp {
+  @@schema("core")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("timestamps")
+}
+
+

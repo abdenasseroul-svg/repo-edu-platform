@@ -1,0 +1,77 @@
+// prisma/models/ai/ai_embeddings.prisma
+// التضمين الدلالي (Embeddings) ومعالجة OCR
+
+model AIEmbedding {
+  @@schema("ai")
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  embedding  Bytes
+  model      String   @default("text-embedding-3-small")
+  dimensions Int      @default(1536)
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@map("ai_embeddings")
+}
+
+model AIKnowledgeBase {
+  @@schema("ai")
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  content     String   @db.Text
+  source      String
+  sourceId    String?
+  vectorId    String?
+  metadata    Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ai_knowledge_base")
+}
+
+model OCRJob {
+  @@schema("ai")
+  id          String    @id @default(cuid())
+  fileUrl     String
+  fileType    String
+  status      OCRStatus @default(PENDING)
+  progress    Float     @default(0)
+  result      Json?
+  error       String?   @db.Text
+  submittedBy String
+  submittedAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("ocr_jobs")
+}
+
+model OCRResult {
+  @@schema("ai")
+  id         String   @id @default(cuid())
+  jobId      String
+  job        OCRJob   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  text       String   @db.Text
+  confidence Float
+  entities   Json?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@map("ocr_results")
+}
+
+enum OCRStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+

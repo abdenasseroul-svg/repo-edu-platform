@@ -1,0 +1,63 @@
+// prisma/models/ai/ai_chat.prisma
+// الدردشة مع الذكاء الاصطناعي
+
+model AIChat {
+  @@schema("ai")
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?
+  context     Json?
+  model       String   @default("gpt-4")
+  temperature Float    @default(0.7)
+  maxTokens   Int      @default(2000)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  messages AIMessage[]
+
+  @@index([userId])
+  @@map("ai_chats")
+}
+
+model AIMessage {
+  @@schema("ai")
+  id        String        @id @default(cuid())
+  chatId    String
+  chat      AIChat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  role      AIMessageRole @default(USER)
+  content   String        @db.Text
+  tokens    Int?
+  metadata  Json?
+  createdAt DateTime       @default(now())
+
+  @@index([chatId])
+  @@map("ai_messages")
+}
+
+model AIPrompt {
+  @@schema("ai")
+  id          String   @id @default(cuid())
+  name        String   @unique
+  template    String   @db.Text
+  description String?  @db.Text
+  category    String?
+  variables   String[]
+  isActive    Boolean  @default(true)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("ai_prompts")
+}
+
+enum AIMessageRole {
+  SYSTEM
+  USER
+  ASSISTANT
+  FUNCTION
+}
+
+

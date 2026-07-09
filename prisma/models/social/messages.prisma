@@ -1,0 +1,40 @@
+// prisma/models/social/messages.prisma
+// الرسائل الخاصة بين المستخدمين
+
+model Message {
+  @@schema("social")
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SenderMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  content    String   @db.Text
+  isRead     Boolean  @default(false)
+  readAt     DateTime?
+  sentAt     DateTime @default(now())
+  editedAt   DateTime?
+  deletedAt  DateTime?
+  isSystem   Boolean  @default(false)
+  metadata   Json?
+
+  attachments MessageAttachment[]
+
+  @@index([senderId, receiverId])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  @@schema("social")
+  id         String   @id @default(cuid())
+  messageId  String
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileUrl    String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime @default(now())
+
+  @@map("message_attachments")
+}
+
+

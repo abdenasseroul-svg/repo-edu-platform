@@ -1,0 +1,84 @@
+// prisma/models/security/audit_logs.prisma
+// سجلات التدقيق والأمان
+
+model AuditLog {
+  @@schema("security")
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation("UserAudit", fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  sessionId  String?
+  timestamp  DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model SecurityLog {
+  @@schema("security")
+  id          String             @id @default(cuid())
+  eventType   SecurityEventType
+  severity    SecuritySeverity
+  description String             @db.Text
+  ipAddress   String?
+  userId      String?
+  user        User?              @relation(fields: [userId], references: [id])
+  data        Json?
+  timestamp   DateTime           @default(now())
+
+  @@index([eventType, timestamp])
+  @@map("security_logs")
+}
+
+model ErrorLog {
+  @@schema("security")
+  id         String        @id @default(cuid())
+  error      String        @db.Text
+  stack      String?       @db.Text
+  context    Json?
+  severity   ErrorSeverity @default(ERROR)
+  userId     String?
+  user       User?         @relation(fields: [userId], references: [id])
+  ipAddress  String?
+  route      String?
+  method     String?
+  statusCode Int?
+  timestamp  DateTime      @default(now())
+  resolvedAt DateTime?
+
+  @@index([severity, timestamp])
+  @@map("error_logs")
+}
+
+enum SecurityEventType {
+  LOGIN_ATTEMPT
+  FAILED_LOGIN
+  SUSPICIOUS_ACTIVITY
+  RATE_LIMIT_EXCEEDED
+  SQL_INJECTION_ATTEMPT
+  XSS_ATTEMPT
+  PERMISSION_VIOLATION
+  API_KEY_ROTATION
+}
+
+enum SecuritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ErrorSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+

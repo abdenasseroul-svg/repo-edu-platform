@@ -1,0 +1,87 @@
+// prisma/models/core/organizations.prisma
+// نموذج المؤسسات والمجموعات الدراسية
+
+model Organization {
+  @@schema("core")
+  id              String    @id @default(cuid())
+  name            String
+  nameAr          String
+  nameFr          String
+  email           String    @unique
+  phone           String?
+  address         String?
+  logo            String?
+  isActive        Boolean   @default(true)
+  subscriptionEnd DateTime?
+  planId          String?
+  plan            SubscriptionPlan? @relation(fields: [planId], references: [id])
+  settings        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  users        User[]
+  classGroups  ClassGroup[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  @@schema("core")
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  joinedAt       DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model ClassGroup {
+  @@schema("core")
+  id             String       @id @default(cuid())
+  name           String
+  description    String?
+  teacherId      String
+  teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  level          Level
+  stream         Stream?
+  subjectId      String?
+  subject        Subject?     @relation(fields: [subjectId], references: [id])
+  schedule       Json?
+  maxStudents    Int          @default(30)
+  startDate      DateTime
+  endDate        DateTime?
+  isActive       Boolean      @default(true)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  members     ClassMember[]
+  liveClasses LiveClass[]
+  assignments Assignment[]
+  quizzes     Quiz[]
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("class_groups")
+}
+
+model ClassMember {
+  @@schema("core")
+  id           String     @id @default(cuid())
+  classGroupId String
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  joinedAt     DateTime   @default(now())
+  leftAt       DateTime?
+  isActive     Boolean    @default(true)
+
+  @@unique([classGroupId, studentId])
+  @@map("class_members")
+}
+
+

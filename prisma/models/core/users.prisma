@@ -1,0 +1,183 @@
+// prisma/models/core/users.prisma
+// نموذج المستخدمين - طالب، أستاذ، أدمن
+
+model User {
+  @@schema("core")
+  id                 String      @id @default(cuid())
+  email              String      @unique
+  password           String?
+  phone              String?
+  firstName          String
+  lastName           String
+  avatar             String?
+  role               Role        @default(STUDENT)
+  isActive           Boolean     @default(true)
+  isVerified         Boolean     @default(false)
+  emailVerified      Boolean     @default(false)
+  phoneVerified      Boolean     @default(false)
+  lastLogin          DateTime?
+  preferences        Json?
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean     @default(false)
+  failedLoginAttempts Int        @default(0)
+  lockedUntil        DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  deletedAt          DateTime?
+
+  student          Student?
+  teacher          Teacher?
+  admin            Admin?
+  organizationId   String?
+  organization     Organization?  @relation(fields: [organizationId], references: [id])
+  subscriptions    Subscription[]
+  payments         Payment[]
+  deviceTokens     DeviceToken[]
+  loginHistory     LoginHistory[]
+  auditLogs        AuditLog[]     @relation("UserAudit")
+  refreshTokens    RefreshToken[]
+  messages         Message[]      @relation("SenderMessages")
+  receivedMessages Message[]      @relation("ReceiverMessages")
+  forumTopics      ForumTopic[]
+  forumReplies     ForumReply[]
+  aiChats          AIChat[]
+  aiMessages       AIMessage[]
+  resourceUploads  Resource[]
+  examSessions     ExamSession[]
+  proctorEvents    ProctorEvent[]
+
+  @@index([email])
+  @@index([role])
+  @@index([organizationId])
+  @@map("users")
+}
+
+model Student {
+  @@schema("core")
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level                Level     @default(ONE_AS)
+  stream               Stream?
+  studyHoursPerWeek    Int       @default(10)
+  preferredStudyTime   String?
+  levelTestScore       Float?
+  levelTestCompleted   Boolean   @default(false)
+  totalStudyTime       Int       @default(0)
+  completedAssignments Int       @default(0)
+  averageScore         Float     @default(0)
+  streakDays           Int       @default(0)
+  lastActiveDate       DateTime?
+  xpPoints             Int       @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  weakSubjects     StudentWeakSubject[]
+  achievements     StudentAchievement[]
+  lessonProgress   LessonProgress[]
+  videoProgress    VideoProgress[]
+  submissions      Submission[]
+  quizAttempts     QuizAttempt[]
+  liveAttendances  LiveAttendance[]
+  chatMessages     ChatMessage[]
+  raisedHands      RaisedHand[]
+  learningPaths    LearningPathStudent[]
+  classMembers     ClassMember[]
+
+  @@index([userId])
+  @@index([level, stream])
+  @@map("students")
+}
+
+model StudentWeakSubject {
+  @@schema("core")
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  score     Float?
+  priority  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, subjectId])
+  @@map("student_weak_subjects")
+}
+
+model Teacher {
+  @@schema("core")
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  certification         String?
+  certificationFile     String?
+  certificationVerified Boolean   @default(false)
+  bio                   String?
+  rating                Float     @default(0)
+  totalStudents         Int       @default(0)
+  isAvailable           Boolean   @default(true)
+  hourlyRate            Float?
+  specialties           TeacherSpecialty[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  liveClasses  LiveClass[]
+  assignments  Assignment[]
+  quizzes      Quiz[]
+  classGroups  ClassGroup[]
+
+  @@index([userId])
+  @@map("teachers")
+}
+
+model TeacherSpecialty {
+  @@schema("core")
+  id         String   @id @default(cuid())
+  teacherId  String
+  teacher    Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subjectId  String
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  experience Int?
+  level      Level?
+
+  @@unique([teacherId, subjectId])
+  @@map("teacher_specialties")
+}
+
+model Admin {
+  @@schema("core")
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions String[]  @default([])
+  lastAction  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+enum Level {
+  ONE_AS
+  TWO_AS
+  THREE_AS
+}
+
+enum Stream {
+  SCIENCE
+  LITERATURE
+  TECHNICAL_MATH
+  MATH
+  FOREIGN_LANGUAGES
+  MANAGEMENT
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+  SUPER_ADMIN
+}
+
+

@@ -1,0 +1,17 @@
+❌ خطأ: PrismaClientInitializationError: 
+Invalid `prisma.user.findUnique()` invocation in
+C:\Users\HP\Videos\mistralapp\edu-platform\backend\src\controllers\auth.controller.ts:61:38
+
+  58 try {
+  59   const { email, password } = req.body;
+  60 
+→ 61   const user = await prisma.user.findUnique(
+Database `(not available)` does not exist on the database server at `localhost:5432`.
+    at $n.handleRequestError (C:\Users\HP\Videos\mistralapp\edu-platform\backend\node_modules\.prisma\client\runtime\library.js:121:7615)
+    at $n.handleAndLogRequestError (C:\Users\HP\Videos\mistralapp\edu-platform\backend\node_modules\.prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\HP\Videos\mistralapp\edu-platform\backend\node_modules\.prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\HP\Videos\mistralapp\edu-platform\backend\node_modules\.prisma\client\runtime\library.js:130:9633)
+    at async login (C:\Users\HP\Videos\mistralapp\edu-platform\backend\src\controllers\auth.controller.ts:61:20) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
