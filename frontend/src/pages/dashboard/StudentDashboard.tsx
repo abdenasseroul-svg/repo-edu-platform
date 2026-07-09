@@ -63,7 +63,7 @@ const StudentDashboard = () => {
             مواد بحاجة للتحسين
           </h2>
           <div className="space-y-3">
-            {data.data.weakSubjects.map((ws: any) => (
+            {data?.data?.weakSubjects?.map((ws: any) => (
               <div key={ws.id} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
                 <div>
                   <p className="font-medium">{ws.subject.nameAr}</p>

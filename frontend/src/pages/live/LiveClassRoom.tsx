@@ -57,7 +57,7 @@ const LiveClassRoom = () => {
   };
 
   const raiseHand = () => {
-    handMutation.mutate();
+    handMutation.mutate(undefined);
     toast.success('✅ تم رفع اليد');
   };
 
