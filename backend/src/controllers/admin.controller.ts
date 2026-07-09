@@ -109,7 +109,7 @@ export class AdminController {
     }
   };
 
-  seedContent = async (_req: Request, res: Response, next: NextError) => {
+  seedContent = async (_req: Request, res: Response, next: any) => {
     try {
       // TODO: إضافة بيانات افتراضية
       res.json({ message: '✅ تم إضافة المحتوى' });
